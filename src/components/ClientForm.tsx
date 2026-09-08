@@ -22,7 +22,7 @@ import type { ClientFormState, ClientPayload } from '@/types';
 import { INITIAL_FORM, PAQUETES, getPrecioForPaquete } from '@/types';
 
 // ── Configurable endpoint (Google Sheets) ───────────────────────────
-const SCRIPT_URL = 'AQUI_TU_URL';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyu8ZdNPxd--m4xqMUpaIm-BgGiyWPg1cAL2FAW74xDHSXrZXs9qBcOr72ZWQSNqam72w/exec';
 
 const CICLOS_SERVI = ['Mes 1 de 3', 'Mes 2 de 3', 'Mes 3 de 3'];
 const CICLOS_CLIENTE = ['Mes 1 de 2', 'Mes 2 de 2'];
