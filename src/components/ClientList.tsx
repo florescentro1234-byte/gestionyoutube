@@ -17,7 +17,7 @@ import {
 import type { ClientRecord } from '@/types';
 
 // ── Configurable endpoint (Google Sheets) ───────────────────────────
-const SCRIPT_URL = 'AQUI_TU_URL';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyu8ZdNPxd--m4xqMUpaIm-BgGiyWPg1cAL2FAW74xDHSXrZXs9qBcOr72ZWQSNqam72w/exec';
 
 function formatDate(iso: string): string {
   try {
