@@ -1,10 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { ShieldCheck, UserPlus, Users } from 'lucide-react';
 import Header from '@/components/Header';
 import ClientForm from '@/components/ClientForm';
 import ClientList from '@/components/ClientList';
 import Toast from '@/components/Toast';
-import { supabase } from '@/lib/supabase';
 
 type Tab = 'registro' | 'clientes';
 
@@ -13,24 +12,6 @@ function App() {
   const [tab, setTab] = useState<Tab>('registro');
   const [clientCount, setClientCount] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
-
-  // Load real client count from Supabase
-  useEffect(() => {
-    let cancelled = false;
-    const loadCount = async () => {
-      const { count, error } = await supabase
-        .from('clients')
-        .select('*', { count: 'exact', head: true });
-      if (cancelled) return;
-      if (!error && count !== null) {
-        setClientCount(count);
-      }
-    };
-    loadCount();
-    return () => {
-      cancelled = true;
-    };
-  }, [refreshKey]);
 
   const handleRegistered = useCallback(() => {
     setClientCount((c) => c + 1);

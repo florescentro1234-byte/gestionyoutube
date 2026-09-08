@@ -12,9 +12,12 @@ import {
   Package,
   AlertTriangle,
   UserCircle,
+  RefreshCw,
 } from 'lucide-react';
 import type { ClientRecord } from '@/types';
-import { supabase } from '@/lib/supabase';
+
+// ── Configurable endpoint (Google Sheets) ───────────────────────────
+const SCRIPT_URL = 'AQUI_TU_URL';
 
 function formatDate(iso: string): string {
   try {
@@ -28,13 +31,7 @@ function formatDate(iso: string): string {
   }
 }
 
-function ClientCard({
-  client,
-  onDelete,
-}: {
-  client: ClientRecord;
-  onDelete: (id: string) => void;
-}) {
+function ClientCard({ client }: { client: ClientRecord }) {
   const isSixMonths = client.paquete === '6 Meses';
   const isPaid = client.estado_pago === 'Pagado';
 
@@ -52,13 +49,6 @@ function ClientCard({
             </p>
           </div>
         </div>
-        <button
-          onClick={() => onDelete(client.id)}
-          className="p-1.5 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
-          aria-label="Eliminar cliente"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-[11px]">
@@ -127,18 +117,20 @@ export default function ClientList({
     const load = async () => {
       setLoading(true);
       setError(null);
-      const { data, error } = await supabase
-        .from('clients')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (cancelled) return;
-      if (error) {
-        setError('No se pudieron cargar los clientes.');
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=read`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (cancelled) return;
+        const rows: ClientRecord[] = Array.isArray(data) ? data : data.clients ?? [];
+        setClients(rows);
+      } catch {
+        if (cancelled) return;
+        setError('No se pudieron cargar los clientes. Verifica que SCRIPT_URL esté configurada y el script de Google Apps Script soporte la lectura (GET ?action=read).');
         setClients([]);
-      } else {
-        setClients((data as ClientRecord[]) ?? []);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     };
     load();
     return () => {
@@ -168,15 +160,6 @@ export default function ClientList({
   );
   const activeCount = clients.length;
   const sixMonthCount = clients.filter((c) => c.paquete === '6 Meses').length;
-
-  const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('clients').delete().eq('id', id);
-    if (error) {
-      setError('No se pudo eliminar el cliente.');
-      return;
-    }
-    setClients((prev) => prev.filter((c) => c.id !== id));
-  };
 
   return (
     <div className="space-y-5">
@@ -274,7 +257,7 @@ export default function ClientList({
       ) : (
         <div className="space-y-3">
           {filtered.map((client) => (
-            <ClientCard key={client.id} client={client} onDelete={handleDelete} />
+            <ClientCard key={client.id} client={client} />
           ))}
         </div>
       )}

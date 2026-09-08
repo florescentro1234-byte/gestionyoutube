@@ -20,10 +20,9 @@ import {
 } from 'lucide-react';
 import type { ClientFormState, ClientPayload } from '@/types';
 import { INITIAL_FORM, PAQUETES, getPrecioForPaquete } from '@/types';
-import { supabase } from '@/lib/supabase';
 
 // ── Configurable endpoint (Google Sheets) ───────────────────────────
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyu8ZdNPxd--m4xqMUpaIm-BgGiyWPg1cAL2FAW74xDHSXrZXs9qBcOr72ZWQSNqam72w/exec';
+const SCRIPT_URL = 'AQUI_TU_URL';
 
 const CICLOS_SERVI = ['Mes 1 de 3', 'Mes 2 de 3', 'Mes 3 de 3'];
 const CICLOS_CLIENTE = ['Mes 1 de 2', 'Mes 2 de 2'];
@@ -153,28 +152,7 @@ export default function ClientForm({
       notas: form.notas.trim(),
     };
 
-    // Save to Supabase
-    const { error: dbError } = await supabase.from('clients').insert({
-      nombre: payload.nombre,
-      telefono: payload.telefono,
-      tipo_correo: payload.tipoCorreo,
-      correo: payload.correo,
-      contrasena: payload.contrasena,
-      ciclo: payload.ciclo,
-      cuenta_administradora: payload.cuentaAdministradora,
-      estado_pago: payload.estadoPago,
-      paquete: payload.paquete,
-      precio: precio,
-      notas: payload.notas,
-    });
-
-    if (dbError) {
-      setLoading(false);
-      setErrors({ notas: 'Error al guardar en la base de datos: ' + dbError.message });
-      return;
-    }
-
-    // Also send to Google Sheets (best-effort, no-cors)
+    // Send to Google Sheets via POST (no-cors)
     try {
       await fetch(SCRIPT_URL, {
         method: 'POST',
