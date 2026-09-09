@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import ClientForm from '@/components/ClientForm';
 import ClientList from '@/components/ClientList';
 import Toast from '@/components/Toast';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 type Tab = 'registro' | 'clientes';
 
@@ -72,46 +73,48 @@ function App() {
             </button>
           </div>
 
-          {/* Tab content */}
-          {tab === 'registro' ? (
-            <div
-              className="rounded-2xl bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/10 p-5 sm:p-7 backdrop-blur-sm animate-float-in shadow-2xl shadow-black/40"
-              style={{ animationDelay: '0.15s', opacity: 0 }}
-            >
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-display text-base font-bold text-white">
-                  Nuevo Cliente
-                </h3>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-400/10 border border-cyan-400/20">
-                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="text-[10px] font-semibold text-cyan-300 uppercase tracking-wider">
-                    Seguro
-                  </span>
+          {/* Tab content — wrapped in Error Boundary so a crash in one tab never blacks out the whole app */}
+          <ErrorBoundary>
+            {tab === 'registro' ? (
+              <div
+                className="rounded-2xl bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/10 p-5 sm:p-7 backdrop-blur-sm animate-float-in shadow-2xl shadow-black/40"
+                style={{ animationDelay: '0.15s', opacity: 0 }}
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="font-display text-base font-bold text-white">
+                    Nuevo Cliente
+                  </h3>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-400/10 border border-cyan-400/20">
+                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                    <span className="text-[10px] font-semibold text-cyan-300 uppercase tracking-wider">
+                      Seguro
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <ClientForm onRegister={handleRegistered} />
-            </div>
-          ) : (
-            <div
-              className="rounded-2xl bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/10 p-5 sm:p-7 backdrop-blur-sm animate-float-in shadow-2xl shadow-black/40"
-              style={{ animationDelay: '0.15s', opacity: 0 }}
-            >
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-display text-base font-bold text-white">
-                  Clientes y Familias
-                </h3>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20">
-                  <Users className="w-3.5 h-3.5 text-red-400" />
-                  <span className="text-[10px] font-semibold text-red-300 uppercase tracking-wider">
-                    {clientCount} Activos
-                  </span>
+                <ClientForm onRegister={handleRegistered} />
+              </div>
+            ) : (
+              <div
+                className="rounded-2xl bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/10 p-5 sm:p-7 backdrop-blur-sm animate-float-in shadow-2xl shadow-black/40"
+                style={{ animationDelay: '0.15s', opacity: 0 }}
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="font-display text-base font-bold text-white">
+                    Clientes y Familias
+                  </h3>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20">
+                    <Users className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-[10px] font-semibold text-red-300 uppercase tracking-wider">
+                      {clientCount} Activos
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <ClientList refreshKey={refreshKey} />
-            </div>
-          )}
+                <ClientList refreshKey={refreshKey} />
+              </div>
+            )}
+          </ErrorBoundary>
 
           <footer className="mt-8 text-center">
             <p className="text-[11px] text-white/30 font-medium">
