@@ -5,6 +5,7 @@ import ClientForm from '@/components/ClientForm';
 import ClientList from '@/components/ClientList';
 import Toast from '@/components/Toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import InstallPrompt from '@/components/InstallPrompt';
 
 type Tab = 'registro' | 'clientes';
 
@@ -35,6 +36,8 @@ function App() {
       <div className="fixed bottom-0 right-0 w-[400px] h-[300px] bg-cyan-500/8 rounded-full blur-[120px] pointer-events-none" />
 
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
+
+      <InstallPrompt />
 
       <div className="relative">
         <Header clientCount={clientCount} />
