@@ -41,6 +41,20 @@ export interface ClientRecord {
   created_at: string;
 }
 
+export interface FamilyRecord {
+  id: string;
+  correo_admin: string;
+  fecha_creacion: string;
+  fecha_vencimiento: string;
+}
+
+export interface FamilyWithUsage extends FamilyRecord {
+  cuposOcupados: number;
+  cuposLibres: number;
+  diasRestantes: number;
+  vencida: boolean;
+}
+
 export const PAQUETES = [
   { label: '1 Mes - $80 MXN', value: '1 Mes', precio: 80 },
   { label: '3 Meses - $180 MXN', value: '3 Meses', precio: 180 },

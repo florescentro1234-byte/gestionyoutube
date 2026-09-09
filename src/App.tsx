@@ -13,11 +13,18 @@ function App() {
   const [tab, setTab] = useState<Tab>('registro');
   const [clientCount, setClientCount] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [familyRefreshKey, setFamilyRefreshKey] = useState(0);
 
   const handleRegistered = useCallback(() => {
     setClientCount((c) => c + 1);
     setRefreshKey((k) => k + 1);
     setToast('Cliente registrado con éxito');
+    window.setTimeout(() => setToast(null), 3500);
+  }, []);
+
+  const handleFamilyCreated = useCallback(() => {
+    setFamilyRefreshKey((k) => k + 1);
+    setToast('Familia creada con éxito');
     window.setTimeout(() => setToast(null), 3500);
   }, []);
 
@@ -92,7 +99,11 @@ function App() {
                   </div>
                 </div>
 
-                <ClientForm onRegister={handleRegistered} />
+                <ClientForm
+                  onRegister={handleRegistered}
+                  familyRefreshKey={familyRefreshKey}
+                  onFamilyCreated={handleFamilyCreated}
+                />
               </div>
             ) : (
               <div

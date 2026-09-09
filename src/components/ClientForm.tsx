@@ -7,7 +7,7 @@ import {
   Eye,
   EyeOff,
   CalendarClock,
-  Users,
+
   CreditCard,
   StickyNote,
   ChevronDown,
@@ -20,9 +20,8 @@ import {
 } from 'lucide-react';
 import type { ClientFormState, ClientPayload } from '@/types';
 import { INITIAL_FORM, PAQUETES, getPrecioForPaquete } from '@/types';
-
-// ── Configurable endpoint (Google Sheets) ───────────────────────────
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyu8ZdNPxd--m4xqMUpaIm-BgGiyWPg1cAL2FAW74xDHSXrZXs9qBcOr72ZWQSNqam72w/exec';
+import { SCRIPT_URL } from '@/lib/config';
+import FamilySelector from '@/components/FamilySelector';
 
 const CICLOS_SERVI = ['Mes 1 de 3', 'Mes 2 de 3', 'Mes 3 de 3'];
 const CICLOS_CLIENTE = ['Mes 1 de 2', 'Mes 2 de 2'];
@@ -72,8 +71,12 @@ const labelClassName = (val: string) =>
 
 export default function ClientForm({
   onRegister,
+  familyRefreshKey,
+  onFamilyCreated,
 }: {
   onRegister: () => void;
+  familyRefreshKey: number;
+  onFamilyCreated: () => void;
 }) {
   const [form, setForm] = useState<ClientFormState>(INITIAL_FORM);
   const [showPassword, setShowPassword] = useState(false);
@@ -421,22 +424,14 @@ export default function ClientForm({
         </Field>
       </div>
 
-      {/* ── Cuenta Familiar Administradora ───────────────────────────────── */}
+      {/* ── Cuenta Familiar Administradora (selector) ───────────────────────────────── */}
       <div data-error={!!errors.cuentaAdministradora}>
-        <Field
-          label="Cuenta Familiar Administradora"
-          icon={<Users className="w-3.5 h-3.5" />}
-          htmlFor="cuentaAdministradora"
-        >
-          <input
-            id="cuentaAdministradora"
-            type="text"
-            value={form.cuentaAdministradora}
-            onChange={(e) => update('cuentaAdministradora', e.target.value)}
-            placeholder="Correo del grupo familiar"
-            className={baseInput}
-          />
-        </Field>
+        <FamilySelector
+          value={form.cuentaAdministradora}
+          onChange={(val) => update('cuentaAdministradora', val)}
+          refreshKey={familyRefreshKey}
+          onFamilyCreated={onFamilyCreated}
+        />
       </div>
 
       {/* ── Estado de Pago ───────────────────────────────── */}

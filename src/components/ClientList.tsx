@@ -13,11 +13,13 @@ import {
   UserCircle,
   RefreshCw,
   WifiOff,
+  MessageCircle,
+  Crown,
+  Home,
 } from 'lucide-react';
 import type { ClientRecord } from '@/types';
-
-// ── Configurable endpoint (Google Sheets) ───────────────────────────
-const SCRIPT_URL = 'AQUI_TU_URL';
+import { SCRIPT_URL } from '@/lib/config';
+import FamilyPanel from '@/components/FamilyPanel';
 
 function formatDate(iso: string): string {
   try {
@@ -36,20 +38,30 @@ function safeNum(val: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-function ClientCard({ client }: { client: ClientRecord }) {
+function ClientCard({
+  client,
+  onRenew,
+}: {
+  client: ClientRecord;
+  onRenew: (client: ClientRecord) => void;
+}) {
   const isSixMonths = client.paquete === '6 Meses';
   const isPaid = client.estado_pago === 'Pagado';
   const precio = safeNum(client.precio);
+  const hasAdmin = !!client.cuenta_administradora;
+  const waLink = client.telefono
+    ? `https://wa.me/52${client.telefono}?text=${encodeURIComponent(`Hola ${client.nombre || ''}, le recordamos su suscripcion Servi Centro - ${client.paquete || ''}.`)}` 
+    : '#';
 
   return (
     <div className="rounded-xl bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 p-4 backdrop-blur-sm hover:border-white/20 transition-all duration-200 group">
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-500/20 to-cyan-400/20 border border-white/10 flex items-center justify-center flex-shrink-0">
             <UserCircle className="w-5 h-5 text-white/70" />
           </div>
-          <div>
-            <p className="text-sm font-bold text-white leading-tight">
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-white leading-tight truncate">
               {client.nombre || 'Sin nombre'}
             </p>
             <p className="text-[10px] text-white/40 mt-0.5">
@@ -60,28 +72,37 @@ function ClientCard({ client }: { client: ClientRecord }) {
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-[11px]">
-        <div className="flex items-center gap-1.5 text-white/50">
+        <div className="flex items-center gap-1.5 text-white/50 min-w-0">
           <Phone className="w-3 h-3 text-cyan-400 flex-shrink-0" />
-          <span className="tracking-wider">{client.telefono || '—'}</span>
+          <span className="tracking-wider truncate">{client.telefono || '—'}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-white/50">
+        <div className="flex items-center gap-1.5 text-white/50 min-w-0">
           <Mail className="w-3 h-3 text-cyan-400 flex-shrink-0" />
           <span className="truncate" title={client.correo}>{client.correo || '—'}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-white/50">
+        <div className="flex items-center gap-1.5 text-white/50 min-w-0">
           <Package className="w-3 h-3 text-cyan-400 flex-shrink-0" />
           <span className="truncate">{client.paquete || '—'}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-white/50">
+        <div className="flex items-center gap-1.5 text-white/50 min-w-0">
           <CalendarClock className="w-3 h-3 text-cyan-400 flex-shrink-0" />
           <span className="truncate">{client.ciclo || '—'}</span>
         </div>
       </div>
 
+      {hasAdmin && (
+        <div className="flex items-center gap-1.5 mt-2 text-[10px] text-white/35 min-w-0">
+          <Crown className="w-3 h-3 text-amber-400 flex-shrink-0" />
+          <span className="truncate" title={client.cuenta_administradora}>
+            {client.cuenta_administradora}
+          </span>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border flex-shrink-0 ${
               isPaid
                 ? 'bg-green-500/10 text-green-400 border-green-500/30'
                 : 'bg-amber-400/10 text-amber-300 border-amber-400/30'
@@ -92,13 +113,33 @@ function ClientCard({ client }: { client: ClientRecord }) {
           <span className="font-display text-sm font-bold text-cyan-300">
             ${precio.toLocaleString('es-MX')} <span className="text-[10px] text-cyan-300/60">MXN</span>
           </span>
+          {isSixMonths && (
+            <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30 flex-shrink-0">
+              <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />
+              <span className="text-[9px] font-semibold text-amber-300">3+3</span>
+            </div>
+          )}
         </div>
-        {isSixMonths && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30">
-            <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />
-            <span className="text-[9px] font-semibold text-amber-300">Relevo 3+3</span>
-          </div>
-        )}
+
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <a
+            href={waLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-1.5 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors"
+            title="Enviar WhatsApp"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+          </a>
+          <button
+            onClick={() => onRenew(client)}
+            className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-cyan-400/10 border border-cyan-400/30 text-cyan-300 text-[10px] font-semibold hover:bg-cyan-400/20 transition-colors"
+            title="Renovacion rapida"
+          >
+            <RefreshCw className="w-3 h-3" />
+            <span className="hidden sm:inline">Renovar</span>
+          </button>
+        </div>
       </div>
 
       {client.notas && (
@@ -119,6 +160,8 @@ export default function ClientList({
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [selectedFamily, setSelectedFamily] = useState<string | null>(null);
+  const [familyRefreshKey, setFamilyRefreshKey] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -185,18 +228,29 @@ export default function ClientList({
   }, [refreshKey]);
 
   const safeClients = clients || [];
+
+  const clientCountByFamily = useCallback(
+    (correo: string) => safeClients.filter((c) => c.cuenta_administradora === correo).length,
+    [safeClients]
+  );
+
   const safeFiltered = useMemo(() => {
-    const list = safeClients;
-    if (!search.trim()) return list;
-    const q = search.toLowerCase();
-    return list.filter(
-      (c) =>
-        (c.nombre || '').toLowerCase().includes(q) ||
-        (c.correo || '').toLowerCase().includes(q) ||
-        (c.telefono || '').includes(q) ||
-        (c.paquete || '').toLowerCase().includes(q)
-    );
-  }, [safeClients, search]);
+    let list = safeClients;
+    if (selectedFamily) {
+      list = list.filter((c) => c.cuenta_administradora === selectedFamily);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (c) =>
+          (c.nombre || '').toLowerCase().includes(q) ||
+          (c.correo || '').toLowerCase().includes(q) ||
+          (c.telefono || '').includes(q) ||
+          (c.paquete || '').toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [safeClients, search, selectedFamily]);
 
   const totalRevenue = useMemo(
     () => safeClients.filter((c) => c.estado_pago === 'Pagado').reduce((sum, c) => sum + safeNum(c.precio), 0),
@@ -210,8 +264,43 @@ export default function ClientList({
   const sixMonthCount = safeClients.filter((c) => c.paquete === '6 Meses').length;
   const totalEst = safeClients.reduce((s, c) => s + safeNum(c.precio), 0);
 
+  const handleRenewClient = useCallback((client: ClientRecord) => {
+    // Quick renewal: send a POST to extend the client's cycle
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'renewClient', id: client.id }),
+    }).catch(() => {});
+  }, []);
+
+  const handleFamilyCreated = useCallback(() => {
+    setFamilyRefreshKey((k) => k + 1);
+  }, []);
+
   return (
     <div className="space-y-5">
+      {/* ── Family Panel ───────────────────────────────── */}
+      <div className="rounded-2xl bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 p-4 sm:p-5 backdrop-blur-sm">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Home className="w-4 h-4 text-cyan-400" />
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+              Grupos Familiares
+            </h4>
+          </div>
+          <span className="text-[10px] text-white/30">
+            Toca una tarjeta para filtrar
+          </span>
+        </div>
+        <FamilyPanel
+          refreshKey={familyRefreshKey}
+          selectedFamily={selectedFamily}
+          onSelectFamily={setSelectedFamily}
+          clientCountByFamily={clientCountByFamily}
+        />
+      </div>
+
       {/* ── Revenue / stats cards ───────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3">
         <div className="relative overflow-hidden rounded-xl border border-green-500/30 bg-gradient-to-br from-green-500/10 to-green-500/5 p-4">
@@ -273,7 +362,7 @@ export default function ClientList({
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por nombre, correo, telefono o plan…"
+          placeholder="Buscar por nombre, correo, telefono o plan..."
           className="w-full rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm placeholder:text-white/25 pl-10 pr-4 py-3 focus:outline-none focus:border-cyan-400/60 transition-all duration-200"
         />
       </div>
@@ -309,16 +398,34 @@ export default function ClientList({
         <div className="text-center py-12">
           <Users className="w-10 h-10 text-white/15 mx-auto mb-3" />
           <p className="text-sm text-white/40 font-medium">
-            {search ? 'Sin resultados para tu busqueda' : 'Aun no hay clientes registrados'}
+            {selectedFamily
+              ? 'No hay clientes en esta familia'
+              : search
+              ? 'Sin resultados para tu busqueda'
+              : 'Aun no hay clientes registrados'}
           </p>
           <p className="text-[11px] text-white/25 mt-1">
-            {search ? 'Intenta con otro termino' : 'Registra tu primer cliente en la pestana "Registro"'}
+            {selectedFamily
+              ? 'Quita el filtro para ver todos los clientes'
+              : search
+              ? 'Intenta con otro termino'
+              : 'Registra tu primer cliente en la pestana "Registro"'}
           </p>
         </div>
       ) : (
         <div className="space-y-3">
+          {selectedFamily && (
+            <div className="flex items-center gap-2 text-[11px] text-cyan-300 font-medium">
+              <Crown className="w-3.5 h-3.5" />
+              Mostrando clientes de: {selectedFamily}
+            </div>
+          )}
           {safeFiltered.map((client) => (
-            <ClientCard key={client.id || client.correo} client={client} />
+            <ClientCard
+              key={client.id || client.correo}
+              client={client}
+              onRenew={handleRenewClient}
+            />
           ))}
         </div>
       )}
