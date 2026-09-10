@@ -86,16 +86,25 @@ export default function FamilySelector({
     setCreating(true);
     setModalError(null);
     try {
+      const payload = {
+        action: 'createFamily',
+        accion: 'crearFamilia',
+        correoAdmin: email,
+        correo: email,
+        adminEmail: email,
+        cuentaAdministradora: email,
+      };
       await fetch(SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'createFamily', correo_admin: email }),
+        body: JSON.stringify(payload),
       });
       setNewAdmin('');
       setShowModal(false);
       onFamilyCreated();
-      load();
+      await load();
+      onChange(email);
     } catch {
       setModalError('Error al crear la familia');
     } finally {
